@@ -85,10 +85,16 @@
   :init
   (ivy-rich-mode 1))
 
+(use-package org)
 ;; Language Support
 (add-hook 'python-mode-hook 'eglot-ensure)
 (add-hook 'python-mode-hook 'company-mode)
 ;; requires sudo apt-get install pandoc
+(use-package python-black
+  :demand t
+  :after python
+  :hook (python-mode . python-black-on-save-mode-enable-dwim))
+
 (use-package markdown-mode
   :ensure t
   :commands (markdown-mode gfm-mode)
@@ -96,25 +102,21 @@
   :init (setq markdown-command "/usr/bin/pandoc"))
 (add-hook 'markdown-mode-hook 'eglot-ensure)
 
+(use-package go-mode
+  :ensure
+  :config
+  :init
+  (add-hook 'before-save-hook #'gofmt-before-save)
+  (add-hook 'go-mode-hook #'eglot-ensure)
+  (add-hook 'go-mode-hook #'company-mode))
 
-(require 'project)
-(defun project-find-go-module (dir)
-  (when-let ((root (locate-dominating-file dir "go.mod")))
-    (cons 'go-module root)))
-(cl-defmethod project-root ((project (head go-module)))
-  (cdr project))
-(add-hook 'project-find-functions #'project-find-go-module)
-(setq-default eglot-workspace-configuration
-    '((:gopls .
-        ((staticcheck . t)
-         (matcher . "CaseSensitive")))))
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(markdown-mode flycheck counsel ivy-rich which-key rainbow-delimiters doom-modeline ivy)))
+   '(go-mode python-black jupyter markdown-mode flycheck counsel ivy-rich which-key rainbow-delimiters doom-modeline ivy)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
